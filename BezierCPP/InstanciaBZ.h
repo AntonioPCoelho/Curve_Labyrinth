@@ -22,12 +22,11 @@ class InstanciaBZ{
 
 public:
     InstanciaBZ();
-    InstanciaBZ(Bezier Curva); // Cria uma instância e associa uma curva a ela
+    InstanciaBZ(Bezier Curva); // Cria uma instancia e associa uma curva a ela
     
     TipoFuncao *modelo; // Modelo a ser desenhado
 
     std::vector<Bezier> Curvas;
-    Bezier *CurvaPointer;
     Bezier Curva; // referencia para a curva onde esta a instancia
     Ponto Posicao, Escala;
     float Rotacao;
@@ -38,6 +37,7 @@ public:
     float Velocidade;
     float tAtual;
     int direcao; // andando do fim para o inicio, ou ao contrario
+    int currentCurve;
 
     void desenha();
     void AtualizaPosicao(float tempoDecorrido);

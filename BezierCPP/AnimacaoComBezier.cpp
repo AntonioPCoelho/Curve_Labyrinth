@@ -17,7 +17,8 @@
 #include <cmath>
 #include <ctime>
 #include <fstream>
-#include<vector>
+#include <vector>
+#include <random>
 
 using namespace std;
 
@@ -215,57 +216,14 @@ void CriaInstancias()
     Personagens[0].Rotacao = 0;
     Personagens[0].modelo = DesenhaPacMan;
     Personagens[0].Escala = Ponto(1, 1, 1);
-
+    
     // Adicionar fantasmas
-    Personagens[1].Posicao = Ponto(-5, 5);
-    Personagens[1].Rotacao = 0;
-    Personagens[1].modelo = DesenhaFantasma;
-    Personagens[1].Escala = Ponto(1, 1, 1);
-
-    Personagens[2].Posicao = Ponto(5, -5);
-    Personagens[2].Rotacao = 0;
-    Personagens[2].modelo = DesenhaFantasma;
-    Personagens[2].Escala = Ponto(1, 1, 1);
-
-    Personagens[3].Posicao = Ponto(-5, 5);
-    Personagens[3].Rotacao = 0;
-    Personagens[3].modelo = DesenhaFantasma;
-    Personagens[3].Escala = Ponto(1, 1, 1);
-
-    Personagens[4].Posicao = Ponto(5, -5);
-    Personagens[4].Rotacao = 0;
-    Personagens[4].modelo = DesenhaFantasma;
-    Personagens[4].Escala = Ponto(1, 1, 1);
-
-    Personagens[5].Posicao = Ponto(-5, 5);
-    Personagens[5].Rotacao = 0;
-    Personagens[5].modelo = DesenhaFantasma;
-    Personagens[5].Escala = Ponto(1, 1, 1);
-
-    Personagens[6].Posicao = Ponto(5, -5);
-    Personagens[6].Rotacao = 0;
-    Personagens[6].modelo = DesenhaFantasma;
-    Personagens[6].Escala = Ponto(1, 1, 1);
-
-    Personagens[7].Posicao = Ponto(-5, 5);
-    Personagens[7].Rotacao = 0;
-    Personagens[7].modelo = DesenhaFantasma;
-    Personagens[7].Escala = Ponto(1, 1, 1);
-
-    Personagens[8].Posicao = Ponto(5, -5);
-    Personagens[8].Rotacao = 0;
-    Personagens[8].modelo = DesenhaFantasma;
-    Personagens[8].Escala = Ponto(1, 1, 1);
-
-    Personagens[9].Posicao = Ponto(-5, 5);
-    Personagens[9].Rotacao = 0;
-    Personagens[9].modelo = DesenhaFantasma;
-    Personagens[9].Escala = Ponto(1, 1, 1);
-
-    Personagens[10].Posicao = Ponto(5, -5);
-    Personagens[10].Rotacao = 0;
-    Personagens[10].modelo = DesenhaFantasma;
-    Personagens[10].Escala = Ponto(1, 1, 1);
+    for (int i = 1; i < 11; ++i) {
+        Personagens[i].Posicao = Ponto((i % 2 == 0) ? 5 : -5, (i % 2 == 0) ? -5 : 5);
+        Personagens[i].Rotacao = 0;
+        Personagens[i].modelo = DesenhaFantasma;
+        Personagens[i].Escala = Ponto(1, 1, 1);
+    }
 
     nInstancias = 11; // Atualizado para incluir os fantasmas
 }
@@ -319,11 +277,11 @@ void CriaCurvas()
     nCurvas = numCurvas;
 }
 
-void AssociaPersonagemComCurva(int p, int c)
-{
+void AssociaPersonagemComCurva(int p, int c) {
     Personagens[p].Curva = Curvas[c];
     Personagens[p].tAtual = 0.5;
     Personagens[p].direcao = 1;
+    Personagens[p].currentCurve = c;
 }
 
 
@@ -376,16 +334,22 @@ void DesenhaPoligonoDeControle(int curva)
     glEnd();
 }
 
-void DesenhaCurvas()
-{
-    for (int i = 0; i < nCurvas; i++)
-    {
-        defineCor(OrangeRed);
-        glLineWidth(4);
-        Curvas[i].Traca();
-        //defineCor(VioletRed);
-        //glLineWidth(2);
-        //DesenhaPoligonoDeControle(i);
+void DesenhaCurvas() {
+    for (int i = 0; i < nCurvas; ++i) {
+        glLineWidth(2.0);
+        if (i == Personagens[0].currentCurve) {
+            defineCor(NeonPink);
+            glLineWidth(4.0);
+        } else {
+            defineCor(OrangeRed);
+        }
+
+        glBegin(GL_LINE_STRIP);
+        for (float t = 0; t <= 1.0; t += 0.01) {
+            Ponto p = Curvas[i].Calcula(t);
+            glVertex2f(p.x, p.y);
+        }
+        glEnd();
     }
 }
 
@@ -438,24 +402,44 @@ void ContaTempo(double tempo)
         }
     }
 }
+int escolheCurvaAleatoria(int atual) {
+    std::vector<int> possiveisCurvas;
+    for (int i = 0; i < nCurvas; ++i) {
+        if (i != atual && (Curvas[i].getPC(0) == Curvas[atual].getPC(0) || Curvas[i].getPC(0) == Curvas[atual].getPC(2) || Curvas[i].getPC(2) == Curvas[atual].getPC(0) || Curvas[i].getPC(2) == Curvas[atual].getPC(2))) {
+            possiveisCurvas.push_back(i);
+        }
+    }
+    if (!possiveisCurvas.empty()) {
+        return possiveisCurvas[rand() % possiveisCurvas.size()];
+    }
+    return atual;
+}
+
 // **********************************************************************
 //  void keyboard ( unsigned char key, int x, int y )
 // **********************************************************************
 void keyboard(unsigned char key, int x, int y)
 {
     Ponto P;
+    static std::vector<int> possibleCurves;
+    static int currentCurveIndex = 0;
+
     switch (key)
-    {   
+    {
         case ' ': // ESPACO
             movingState = !movingState;
+            break;
+        case 'n':
+            currentCurve = (currentCurve + 1) % nCurvas;
+            AssociaPersonagemComCurva(0, currentCurve);
             break;
         case 'd': // d altera a direcao
             Personagens[0].direcao *= -1; // Inverte a direção
             break;
         case 'a':
-                P = Curvas[1].Calcula(0);
-                P.imprime("Pra t==0 :");
-                break;
+            P = Curvas[1].Calcula(0);
+            P.imprime("Pra t==0 :");
+            break;
         case 27:     // Termina o programa qdo
             exit(0); // a tecla ESC for pressionada
             break;
