@@ -94,30 +94,23 @@ Ponto InstanciaBZ::ObtemPosicao()
     return PosicaoDoPersonagem;
 }
 
-void InstanciaBZ::AtualizaPosicao(float tempoDecorrido) {
-    tAtual += direcao * tempoDecorrido;
-
-    if (tAtual >= 1.0 || tAtual <= 0.0) {
-        direcao *= -1;
-        tAtual = std::max(0.0f, std::min(1.0f, tAtual));
-
-        // Encontrar curvas possíveis que intersectam com a curva atual na posição atual
-        std::vector<int> possibleCurves;
-        Ponto currentPos = Curva.Calcula(tAtual);
-        for (int i = 0; i < Curvas.size(); ++i) {
-            if (Curvas[i].getPC(0) == currentPos || Curvas[i].getPC(2) == currentPos) {
-                possibleCurves.push_back(i);
-            }
-        }
-
-        // Selecionar aleatoriamente uma nova curva a partir das curvas possíveis
-        if (!possibleCurves.empty()) {
-            int nextCurveIndex = possibleCurves[rand() % possibleCurves.size()];
-            Curva = Curvas[nextCurveIndex];
-            tAtual = 0.0; // Reiniciar tAtual para começar do início da nova curva
-        }
+void InstanciaBZ::AtualizaPosicao(float tempoDecorrido)
+{
+    cout << "tAtual" << tAtual << endl;
+    if (direcao==1)
+        tAtual +=0.01;
+    else
+        tAtual -=0.01;
+    if(tAtual > 1)
+    {
+        tAtual = 1.0;
+        direcao = -1;
     }
-
+    if (tAtual < 0.0)
+    {
+        tAtual = 0.0;
+        direcao = 1;
+    }
     Ponto P = Curva.Calcula(tAtual);
-    Posicao = P;
+    Posicao = P; 
 }

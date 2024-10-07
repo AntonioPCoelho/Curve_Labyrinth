@@ -4,8 +4,8 @@
 //
 // Programa basico para criar aplicacoes 2D em OpenGL
 //
-// Marcio Sarroglia Pinho
-// pinho@pucrs.br
+// Antonio Pasquali Coelho
+// antonio.pasquali@edu.pucrs.br
 // **********************************************************************
 
 // Para uso no Xcode:
@@ -89,7 +89,7 @@ void animate()
     {
         AccumDeltaT = 0;
         angulo += 2;
-        //Personagens[1].Rotacao++;
+        //Personagens[0].Rotacao++;
         glutPostRedisplay();
     }
     if (TempoTotal > 5.0)
@@ -228,23 +228,6 @@ void CriaInstancias()
     nInstancias = 11; // Atualizado para incluir os fantasmas
 }
 
-
-//  Carrega os modelos que poderão representar os personagens
-void CarregaModelos()
-{
-    //Mapa.LePoligono("EstadoRS.txt");
-    //MeiaSeta.LePoligono("MeiaSeta.txt");
-    //Mastro.LePoligono("Mastro.txt");
-    
-    Ponto A, B;
-    //Mapa.obtemLimites(A,B);
-    cout << "Limites do Mapa" << endl;
-    A.imprime();
-    cout << endl;
-    B.imprime();
-    cout << endl;
-}
-
 // Metodo alterado que le as curvas de um arquivo texto
 void CriaCurvas()
 {
@@ -289,9 +272,6 @@ void init()
 {
     // Define a cor do fundo da tela (AZUL)
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-
-    // carrega os modelos armazenados em arquivos
-    CarregaModelos();
     
     // cria instancias do modelos
     CriaInstancias();
@@ -401,18 +381,6 @@ void ContaTempo(double tempo)
             break;
         }
     }
-}
-int escolheCurvaAleatoria(int atual) {
-    std::vector<int> possiveisCurvas;
-    for (int i = 0; i < nCurvas; ++i) {
-        if (i != atual && (Curvas[i].getPC(0) == Curvas[atual].getPC(0) || Curvas[i].getPC(0) == Curvas[atual].getPC(2) || Curvas[i].getPC(2) == Curvas[atual].getPC(0) || Curvas[i].getPC(2) == Curvas[atual].getPC(2))) {
-            possiveisCurvas.push_back(i);
-        }
-    }
-    if (!possiveisCurvas.empty()) {
-        return possiveisCurvas[rand() % possiveisCurvas.size()];
-    }
-    return atual;
 }
 
 // **********************************************************************
