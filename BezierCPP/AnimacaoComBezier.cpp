@@ -77,6 +77,7 @@ bool checaColisao(Ponto playerPos, Ponto enemyPos, float limite = 1.0f) {
     return dist < limite;
 }
 
+
 // Metodo alterado que le as curvas de um arquivo texto
 void CriaCurvas()
 {
@@ -107,6 +108,13 @@ void CriaCurvas()
     }
 
     nCurvas = numCurvas;
+}
+
+void AssociaPersonagemComCurva(int p, int c) {
+    Personagens[p].Curva = Curvas[c];
+    Personagens[p].tAtual = 0.5;
+    Personagens[p].direcao = 1;
+    Personagens[p].currentCurve = c;
 }
 
 void animate()
@@ -197,13 +205,6 @@ void DesenhaPacMan()
         }
     }
     glEnd();
-}
-
-void AssociaPersonagemComCurva(int p, int c) {
-    Personagens[p].Curva = Curvas[c];
-    Personagens[p].tAtual = 0.5;
-    Personagens[p].direcao = 1;
-    Personagens[p].currentCurve = c;
 }
 
 // Esta funcao deve instanciar todos os personagens do cenario
@@ -303,6 +304,7 @@ void DesenhaCurvas() {
     }
 }
 
+
 void display(void)
 {
 
@@ -367,9 +369,9 @@ void keyboard(unsigned char key, int x, int y)
         case ' ': // ESPACO
             movingState = !movingState;
             break;
-        case 'n':
-            currentCurve = (currentCurve + 1) % nCurvas;
-            AssociaPersonagemComCurva(0, currentCurve);
+        case 'n':  // Pressione 'n' para mudar de curva manualmente
+            selectedCurve = (selectedCurve + 1) % nCurvas;
+            AssociaPersonagemComCurva(0, selectedCurve);
             break;
         case 'd': // d altera a direcao
             Personagens[0].direcao *= -1; // Inverte a direção
