@@ -41,7 +41,6 @@ Ponto InstanciaPonto(Ponto P)
 
 InstanciaBZ::InstanciaBZ()
 {
-    
     Rotacao = 0;
     Posicao = Ponto(0,0,0);
     Escala = Ponto(1,1,1);
@@ -50,15 +49,14 @@ InstanciaBZ::InstanciaBZ()
     proxCurva = -1;
     tAtual = 0.0;
     direcao = 1;
+    cor = rand() %94;
 }
 
 InstanciaBZ::InstanciaBZ(Bezier C)
 {
-    
-    Rotacao = 0;
     Posicao = Ponto(0,0,0);
     Escala = Ponto(1,1,1);
-    
+
     Curva = C;
     tAtual = 0;
     direcao = 1;
@@ -101,6 +99,7 @@ void InstanciaBZ::AtualizaPosicao(float tempoDecorrido)
         tAtual +=0.01;
     else
         tAtual -=0.01;
+    
     if(tAtual > 1)
     {
         tAtual = 1.0;
@@ -111,6 +110,8 @@ void InstanciaBZ::AtualizaPosicao(float tempoDecorrido)
         tAtual = 0.0;
         direcao = 1;
     }
+
     Ponto P = Curva.Calcula(tAtual);
+    
     Posicao = P; 
 }

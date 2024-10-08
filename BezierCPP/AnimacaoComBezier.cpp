@@ -63,7 +63,7 @@ bool desenha = false;
 //Poligono Mapa, MeiaSeta, Mastro, Controle;
 int nInstancias = 0;
 
-float angulo = 0.0;
+float angulo = 160.0;
 
 double nFrames = 0;
 double TempoTotal = 0;
@@ -75,6 +75,38 @@ bool movingState = false; // Estado de movimento do jogador
 bool checaColisao(Ponto playerPos, Ponto enemyPos, float limite = 1.0f) {
     float dist = sqrt(pow(playerPos.x - enemyPos.x, 2) + pow(playerPos.y - enemyPos.y, 2));
     return dist < limite;
+}
+
+// Metodo alterado que le as curvas de um arquivo texto
+void CriaCurvas()
+{
+    std::ifstream coordFile("Coordenadas.txt");
+    std::ifstream curvasFile("Curvas.txt");
+
+    if (!coordFile.is_open() || !curvasFile.is_open()) {
+        std::cerr << "Erro ao abrir o arquivo" << std::endl;
+        return;
+    }
+
+    int numCoords;
+    coordFile >> numCoords;
+    std::vector<Ponto> pontos;
+    for (int i = 0; i < numCoords; ++i) {
+        float x, y;
+        coordFile >> x >> y;
+        pontos.emplace_back(x, y);
+    }
+
+    int numCurvas;
+    curvasFile >> numCurvas;
+    Curvas.resize(numCurvas);
+    for (int i = 0; i < numCurvas; ++i) {
+        int idx1, idx2, idx3;
+        curvasFile >> idx1 >> idx2 >> idx3;
+        Curvas[i] = Bezier(pontos[idx1], pontos[idx2], pontos[idx3]);
+    }
+
+    nCurvas = numCurvas;
 }
 
 void animate()
@@ -135,19 +167,13 @@ void DesenhaEixos()
     glEnd();
 }
 
-void DesenhaPersonagem()
-{
-    defineCor(YellowGreen);
-    glTranslatef(53,33,0);
-    //Mapa.desenhaPoligono();
-}
 
 void DesenhaTriangulo()
 {
     glBegin(GL_TRIANGLES);
-        glVertex2f(-0.5,-0.5);
-        glVertex2f(0, 0.5);
-        glVertex2f(0.5,-0.5);
+        glVertex2f(-1,-1);
+        glVertex2f(0, 1);
+        glVertex2f(1,-1);
     glEnd();
 }
 
@@ -173,93 +199,6 @@ void DesenhaPacMan()
     glEnd();
 }
 
-void DesenhaFantasma()
-{
-    defineCor(MediumBlue);
-    float radius = 0.8f;
-    int numSegments = 50;
-    float angleStep = M_PI / numSegments;
-
-    // Desenhar a parte superior (semicirculo)
-    glBegin(GL_TRIANGLE_FAN);
-    glVertex2f(0.0f, 0.0f); // Centro do semicirculo
-    for (int i = 0; i <= numSegments; ++i)
-    {
-        float angle = i * angleStep;
-        glVertex2f(radius * cos(angle), radius * sin(angle));
-    }
-    glEnd();
-
-    // Desenhar a parte inferior (retângulo com bordas onduladas)
-    glBegin(GL_QUADS);
-    glVertex2f(-radius, 0.0f);
-    glVertex2f(radius, 0.0f);
-    glVertex2f(radius, -radius);
-    glVertex2f(-radius, -radius);
-    glEnd();
-
-    // Desenhar as bordas onduladas
-    glBegin(GL_TRIANGLE_FAN);
-    glVertex2f(-radius, -radius);
-    for (int i = 0; i <= numSegments; ++i)
-    {
-        float angle = i * angleStep;
-        glVertex2f(-radius + (2 * radius / numSegments) * i, -radius - 0.2f * sin(3 * angle));
-    }
-    glEnd();
-}
-
-// Esta funcao deve instanciar todos os personagens do cenario
-void CriaInstancias()
-{
-    Personagens[0].Posicao = Ponto(0, 0);
-    Personagens[0].Rotacao = 0;
-    Personagens[0].modelo = DesenhaPacMan;
-    Personagens[0].Escala = Ponto(1, 1, 1);
-    
-    // Adicionar fantasmas
-    for (int i = 1; i < 11; ++i) {
-        Personagens[i].Posicao = Ponto((i % 2 == 0) ? 5 : -5, (i % 2 == 0) ? -5 : 5);
-        Personagens[i].Rotacao = 0;
-        Personagens[i].modelo = DesenhaFantasma;
-        Personagens[i].Escala = Ponto(1, 1, 1);
-    }
-
-    nInstancias = 11; // Atualizado para incluir os fantasmas
-}
-
-// Metodo alterado que le as curvas de um arquivo texto
-void CriaCurvas()
-{
-    std::ifstream coordFile("Coordenadas.txt");
-    std::ifstream curvasFile("Curvas.txt");
-
-    if (!coordFile.is_open() || !curvasFile.is_open()) {
-        std::cerr << "Erro ao abrir o arquivo" << std::endl;
-        return;
-    }
-
-    int numCoords;
-    coordFile >> numCoords;
-    std::vector<Ponto> pontos;
-    for (int i = 0; i < numCoords; ++i) {
-        float x, y;
-        coordFile >> x >> y;
-        pontos.emplace_back(x, y);
-    }
-
-    int numCurvas;
-    curvasFile >> numCurvas;
-    Curvas.resize(numCurvas);
-    for (int i = 0; i < numCurvas; ++i) {
-        int idx1, idx2, idx3;
-        curvasFile >> idx1 >> idx2 >> idx3;
-        Curvas[i] = Bezier(pontos[idx1], pontos[idx2], pontos[idx3]);
-    }
-
-    nCurvas = numCurvas;
-}
-
 void AssociaPersonagemComCurva(int p, int c) {
     Personagens[p].Curva = Curvas[c];
     Personagens[p].tAtual = 0.5;
@@ -267,17 +206,47 @@ void AssociaPersonagemComCurva(int p, int c) {
     Personagens[p].currentCurve = c;
 }
 
+// Esta funcao deve instanciar todos os personagens do cenario
+void CriaInstancias()
+{
+    // Criação do veículo do jogador (Pac-Man)
+    Personagens[0].Posicao = Ponto(0, 0);
+    Personagens[0].Rotacao = 0;
+    Personagens[0].modelo = DesenhaPacMan;
+    Personagens[0].Escala = Ponto(1, 1, 1);
+
+    // Criação dos veículos inimigos
+    for (int i = 1; i <= 10; ++i) {
+        // Seleciona uma curva aleatória
+        int curvaAleatoria = rand() % nCurvas;
+        
+        // Coloca o veículo no meio da curva
+        Personagens[i].Posicao = Curvas[curvaAleatoria].Calcula(0.5);
+        Personagens[i].Rotacao = 0;
+        Personagens[i].modelo = DesenhaTriangulo;  // Forma do inimigo
+        Personagens[i].Escala = Ponto(1, 1, 1);
+
+        // Para metade dos inimigos, o movimento será em direção ao ponto inicial da curva
+        Personagens[i].direcao = (i % 2 == 0) ? -1 : 1;
+
+        // Associa o inimigo com a curva escolhida (agora que as curvas já foram criadas)
+        AssociaPersonagemComCurva(i, curvaAleatoria);
+    }
+
+    nInstancias = 11; // Atualizado para incluir o jogador e 10 inimigos
+}
 
 void init()
 {
+    srand(time(NULL));
     // Define a cor do fundo da tela (AZUL)
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-    
-    // cria instancias do modelos
-    CriaInstancias();
 
     // carrega as curvas que farao parte do cenario
     CriaCurvas();
+    
+    // cria instancias do modelos
+    CriaInstancias();
     
     AssociaPersonagemComCurva(0, 0);
 
@@ -298,6 +267,7 @@ void DesenhaPersonagens(float tempoDecorrido) {
                 exit(0); // Encerra o jogo
             }
         }
+        defineCor(Personagens[i].cor);
         Personagens[i].desenha();
     }
 }

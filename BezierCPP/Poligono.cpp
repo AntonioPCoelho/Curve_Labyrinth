@@ -56,6 +56,7 @@ void Poligono::desenhaPoligono()
         glVertex3f(Vertices[i].x,Vertices[i].y,Vertices[i].z);
     glEnd();
 }
+
 void Poligono::desenhaVertices()
 {
     glBegin(GL_POINTS);
@@ -63,6 +64,7 @@ void Poligono::desenhaVertices()
         glVertex3f(Vertices[i].x,Vertices[i].y,Vertices[i].z);
     glEnd();
 }
+
 void Poligono::imprime()
 {
     for (int i=0; i<Vertices.size(); i++)

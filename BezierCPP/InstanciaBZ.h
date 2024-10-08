@@ -26,7 +26,6 @@ public:
     
     TipoFuncao *modelo; // Modelo a ser desenhado
 
-    std::vector<Bezier> Curvas;
     Bezier Curva; // referencia para a curva onde esta a instancia
     Ponto Posicao, Escala;
     float Rotacao;
